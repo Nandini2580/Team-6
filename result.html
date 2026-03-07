@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Forecast Result</title>
+
+<style>
+body{
+    font-family: Arial;
+    margin:0;
+    background-image: url('static/images/train.jpeg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+.card{
+    width:480px;
+    margin:60px auto;
+    background:rgba(244, 236, 236, 0.9);
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.2);
+    text-align:center;
+}
+
+h2{
+    color:#1976d2;
+}
+
+.result-box{
+    background:rgba(244, 236, 236, 0.9);
+    padding:20px;
+    border-radius:10px;
+    margin-top:20px;
+}
+
+.big{
+    font-size:30px;
+    color:#0d47a1;
+    margin:10px 0;
+    font-weight:bold;
+}
+
+.label{
+    font-size:14px;
+    color:#555;
+}
+
+.btn{
+    display:inline-block;
+    margin-top:20px;
+    text-decoration:none;
+    padding:10px 20px;
+    border-radius:8px;
+    font-weight:bold;
+    transition:0.3s;
+    border:none;
+    cursor:pointer;
+}
+
+.predict-btn{
+    background:#1976d2;
+    color:white;
+}
+
+.predict-btn:hover{
+    background:#0d47a1;
+}
+
+.schedule-btn{
+    background:#2e7d32;
+    color:white;
+    margin-left:10px;
+}
+
+.schedule-btn:hover{
+    background:#1b5e20;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+
+<h2>🚆 Forecast Result</h2>
+
+<p><b>Station:</b> {{station}}</p>
+<p><b>Date:</b> {{date}}</p>
+<p><b>Rake Type:</b> {{rake}}</p>
+<p><b>Predicted Load:</b> {{prediction}} tons</p>
+
+<div class="result-box">
+
+    <div class="label">Required Rakes</div>
+    <div class="big">{{rakes}}</div>
+
+    <div class="label">Total Wagons Needed</div>
+    <div class="big">{{wagons}}</div>
+
+</div>
+
+<!-- Predict Again Button -->
+<a href="/" class="btn predict-btn">← Predict Again</a>
+
+<!-- Schedule Button -->
+<form action="/schedule" method="POST" style="display:inline;">
+
+    <!-- Hidden Data Passed to Scheduling -->
+    <input type="hidden" name="station" value="{{station}}">
+    <input type="hidden" name="wagons" value="{{wagons}}">
+    <input type="hidden" name="rake" value="{{rake}}">
+    <input type="hidden" name="forecast_rakes" value="{{rakes}}">
+
+    <button type="submit" class="btn schedule-btn">
+        🚆 Check Schedule
+    </button>
+
+</form>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Rake Demand Forecast</title>
+
+<style>
+body{
+    font-family: Arial;
+    margin:0;
+    background-image: url('static/images/train.jpeg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+.container{
+    width:420px;
+    margin:60px auto;
+    background: rgba(244, 236, 236, 0.9);
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 8px 25px rgba(0,0,0,0.35);
+    backdrop-filter: blur(6px);
+}
+
+h2{
+    text-align:center;
+}
+
+label{
+    font-weight:bold;
+}
+
+input, select{
+    width:100%;
+    height:40px;             
+    padding:8px;
+    margin:8px 0 12px 0;
+    border-radius:6px;
+    border:1px solid #ccc;
+    box-sizing:border-box;    
+    font-size:14px;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    background:#1976d2;
+    color:white;
+    border:none;
+    border-radius:6px;
+    font-size:16px;
+}
+
+.limit{
+    font-size:13px;
+    color:#555;
+}
+</style>
+
+<script>
+function updateOptions(){
+
+    let rake=document.getElementById("rake").value;
+    let commodity=document.getElementById("commodity");
+    let load=document.getElementById("load");
+    let limitText=document.getElementById("limitText");
+
+    // reset
+    commodity.innerHTML="<option value=''>Select Commodity</option>";
+    load.value="";
+    load.max="";
+    limitText.innerHTML="";
+
+    if(rake==="BOXN"){
+        commodity.innerHTML += "<option value='Coal'>Coal</option>";
+        load.max=661200;
+        limitText.innerHTML="Max allowed load: 661200 tons";
+    }
+
+    else if(rake==="BCN"){
+        commodity.innerHTML += "<option value='Cement'>Cement</option>";
+        commodity.innerHTML += "<option value='Food Grain'>Food Grain</option>";
+        load.max=452400;
+        limitText.innerHTML="Max allowed load: 452400 tons";
+    }
+
+    else if(rake==="BTPN"){
+        commodity.innerHTML += "<option value='Fuel'>Fuel</option>";
+        load.max=522000;
+        limitText.innerHTML="Max allowed load: 522000 tons";
+    }
+}
+function checkLoad(){
+    let loadField = document.getElementById("load");
+
+    let entered = parseFloat(loadField.value);
+    let maxAllowed = parseFloat(loadField.max);
+
+    if (!isNaN(maxAllowed) && entered > maxAllowed) {
+        alert("Load exceeds allowed limit!");
+        loadField.value = "";
+    }
+}
+
+function setMinDate(){
+    let today=new Date().toISOString().split("T")[0];
+    document.getElementById("date").setAttribute("min",today);
+}
+
+window.onload=setMinDate;
+</script>
+
+</head>
+<body>
+
+<div class="container">
+<h2>🚆 Rake Demand Forecast</h2>
+
+<form action="/predict" method="POST">
+
+<label>Station</label>
+<select name="station" required>
+    <option value="">Select Station</option>
+    {% for s in stations %}
+        <option value="{{ s }}">{{ s }}</option>
+    {% endfor %}
+</select>
+
+<label>Rake Type</label>
+<select name="rake" id="rake" onchange="updateOptions()" required>
+    <option value="">Select Rake</option>
+    <option value="BOXN">BOXN</option>
+    <option value="BCN">BCN</option>
+    <option value="BTPN">BTPN</option>
+</select>
+
+<label>Commodity</label>
+<select name="commodity" id="commodity" required>
+    <option value="">Select Commodity</option>
+</select>
+
+<label>Load (tons)</label>
+<input type="number" name="load" id="load" onblur="checkLoad()" required>
+<div id="limitText" class="limit"></div>
+
+<label>Date</label>
+<input type="date" name="date" id="date" required>
+
+<button type="submit">Predict</button>
+
+</form>
+</div>
+
+</body>
+</html>
+
