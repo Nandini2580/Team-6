@@ -17,15 +17,15 @@ body{
 .container{
     width:420px;
     margin:60px auto;
-    background: rgba(244, 236, 236, 0.9);
+    background: rgba(244,236,236,0.92);
     padding:30px;
     border-radius:12px;
     box-shadow:0 8px 25px rgba(0,0,0,0.35);
-    backdrop-filter: blur(6px);
 }
 
 h2{
     text-align:center;
+    margin-bottom:20px;
 }
 
 label{
@@ -34,13 +34,19 @@ label{
 
 input, select{
     width:100%;
-    height:40px;             
+    height:40px;
     padding:8px;
     margin:8px 0 12px 0;
     border-radius:6px;
     border:1px solid #ccc;
-    box-sizing:border-box;    
+    box-sizing:border-box;
     font-size:14px;
+    background:white;
+}
+
+input:focus, select:focus{
+    outline:none;
+    border:1px solid #1976d2;
 }
 
 button{
@@ -51,6 +57,11 @@ button{
     border:none;
     border-radius:6px;
     font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#0d5bb5;
 }
 
 .limit{
@@ -67,34 +78,57 @@ function updateOptions(){
     let load=document.getElementById("load");
     let limitText=document.getElementById("limitText");
 
-    // reset
-    commodity.innerHTML="<option value=''>Select Commodity</option>";
+    // Reset everything
+    commodity.innerHTML = "<option value='' selected disabled>Select Commodity</option>";
     load.value="";
     load.max="";
     limitText.innerHTML="";
 
-    if(rake==="BOXN"){
+    // ---------------- BOXN ----------------
+    if(rake === "BOXN"){
+
         commodity.innerHTML += "<option value='Coal'>Coal</option>";
-        load.max=661200;
-        limitText.innerHTML="Max allowed load: 661200 tons";
+        commodity.innerHTML += "<option value='Iron Ore'>Iron Ore</option>";
+
+        load.min = 20000;
+        load.max = 661200;
+
+        limitText.innerHTML =
+        "Min load: 20000 tons | Max allowed load: 661200 tons";
     }
 
-    else if(rake==="BCN"){
+    // ---------------- BCN ----------------
+    else if(rake === "BCN"){
+
+        commodity.innerHTML += "<option value='Food Grains'>Food Grains</option>";
         commodity.innerHTML += "<option value='Cement'>Cement</option>";
-        commodity.innerHTML += "<option value='Food Grain'>Food Grain</option>";
-        load.max=452400;
-        limitText.innerHTML="Max allowed load: 452400 tons";
+        commodity.innerHTML += "<option value='Packed Consumer Goods'>Packed Consumer Goods</option>";
+        commodity.innerHTML += "<option value='Steel Products'>Steel Products</option>";
+
+        load.min = 15000;
+        load.max = 452400;
+
+        limitText.innerHTML =
+        "Min load: 15000 tons | Max allowed load: 452400 tons";
     }
 
-    else if(rake==="BTPN"){
+    // ---------------- BTPN ----------------
+    else if(rake === "BTPN"){
+
         commodity.innerHTML += "<option value='Fuel'>Fuel</option>";
-        load.max=522000;
-        limitText.innerHTML="Max allowed load: 522000 tons";
+        commodity.innerHTML += "<option value='Diesel'>Diesel</option>";
+        commodity.innerHTML += "<option value='Vegetable Oil'>Vegetable Oil</option>";
+
+        load.min = 12000;
+        load.max = 522000;
+
+        limitText.innerHTML =
+        "Min load: 12000 tons | Max allowed load: 522000 tons";
     }
 }
+
 function checkLoad(){
     let loadField = document.getElementById("load");
-
     let entered = parseFloat(loadField.value);
     let maxAllowed = parseFloat(loadField.max);
 
@@ -122,7 +156,7 @@ window.onload=setMinDate;
 
 <label>Station</label>
 <select name="station" required>
-    <option value="">Select Station</option>
+    <option value="" disabled selected>Select Station</option>
     {% for s in stations %}
         <option value="{{ s }}">{{ s }}</option>
     {% endfor %}
@@ -130,7 +164,7 @@ window.onload=setMinDate;
 
 <label>Rake Type</label>
 <select name="rake" id="rake" onchange="updateOptions()" required>
-    <option value="">Select Rake</option>
+    <option value="" disabled selected>Select Rake</option>
     <option value="BOXN">BOXN</option>
     <option value="BCN">BCN</option>
     <option value="BTPN">BTPN</option>
@@ -138,7 +172,7 @@ window.onload=setMinDate;
 
 <label>Commodity</label>
 <select name="commodity" id="commodity" required>
-    <option value="">Select Commodity</option>
+    <option value="" disabled selected>Select Commodity</option>
 </select>
 
 <label>Load (tons)</label>
@@ -155,4 +189,3 @@ window.onload=setMinDate;
 
 </body>
 </html>
-
