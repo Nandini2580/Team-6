@@ -60,11 +60,6 @@ def predict():
         rakes=rakes,
         date=date
     )
-
-
-# -----------------------------
-# SCHEDULING ROUTE
-# -----------------------------
 @app.route('/schedule', methods=['GET', 'POST'])
 def schedule():
 
@@ -78,22 +73,27 @@ def schedule():
 
     if request.method == 'POST':
 
-        station = request.form.get('station')
+        source_station = request.form.get('station')
         total_wagons = int(request.form.get('wagons'))
         rake_type = request.form.get('rake')
         forecast_rakes = int(request.form.get('forecast_rakes'))
 
-        # Capacity based on rake type
-        if rake_type == "BOXN":
-            max_capacity = 58
-        elif rake_type == "BCN":
-            max_capacity = 42
-        elif rake_type == "BTPN":
-            max_capacity = 45
-        else:
-            max_capacity = 58
+        # ✅ FIXED RANDOM SEED (schedule won't change for same input)
+        import hashlib
+        seed_string = f"{source_station}-{total_wagons}-{forecast_rakes}-{rake_type}"
+        seed_value = int(hashlib.md5(seed_string.encode()).hexdigest(), 16) % (10**8)
+        random.seed(seed_value)
 
-        destinations = [s for s in stations if s != station]
+        # Rake capacity mapping
+        rake_capacity_map = {
+            "BOXN": 58,
+            "BCN": 42,
+            "BTPN": 45
+        }
+
+        max_capacity = rake_capacity_map.get(rake_type, 58)
+
+        destinations = [s for s in stations if s != source_station]
         num_destinations = len(destinations)
 
         station_summary = []
@@ -103,54 +103,49 @@ def schedule():
 
         for i, dest in enumerate(destinations):
 
-            # -----------------------------
-            # Safe Rake Distribution
-            # -----------------------------
+            # ---------------- Rake Allocation ----------------
             if i == num_destinations - 1:
                 rakes_assigned = remaining_rakes
             else:
-
+                min_rakes = max(1, remaining_rakes // (num_destinations * 2))
                 max_rakes = remaining_rakes - (num_destinations - i - 1)
 
-                if max_rakes <= 1:
-                    rakes_assigned = 1
+                if max_rakes < min_rakes:
+                    rakes_assigned = min_rakes
                 else:
-                    rakes_assigned = random.randint(1, max_rakes)
+                    rakes_assigned = random.randint(min_rakes, max_rakes)
 
-            remaining_rakes -= rakes_assigned
+            rakes_assigned = min(rakes_assigned, remaining_rakes)
 
-            # -----------------------------
-            # Wagon Distribution
-            # -----------------------------
+            # ---------------- Wagon Allocation (Capacity Safe) ----------------
             max_wagons_allowed = rakes_assigned * max_capacity
 
             if i == num_destinations - 1:
-                wagons = remaining_wagons
+                wagons_assigned = min(remaining_wagons, max_wagons_allowed)
             else:
+                if max_wagons_allowed > 0 and remaining_wagons > 0:
+                    lower_bound = int(max_wagons_allowed * 0.7)
+                    upper_bound = min(max_wagons_allowed, remaining_wagons)
 
-                max_wagons_allowed = min(
-                    max_wagons_allowed,
-                    remaining_wagons - (num_destinations - i - 1)
-                )
-
-                if max_wagons_allowed <= 1:
-                    wagons = 1
+                    if upper_bound < lower_bound:
+                        wagons_assigned = upper_bound
+                    else:
+                        wagons_assigned = random.randint(lower_bound, upper_bound)
                 else:
-                    wagons = random.randint(1, max_wagons_allowed)
+                    wagons_assigned = 0
 
-            remaining_wagons -= wagons
+            remaining_rakes -= rakes_assigned
+            remaining_wagons -= wagons_assigned
 
             station_summary.append({
                 "destination": dest,
-                "total_wagons": wagons,
+                "total_wagons": wagons_assigned,
                 "rakes_required": rakes_assigned
             })
 
         return render_template("schedule.html", station_summary=station_summary)
 
     return render_template("schedule.html", station_summary=[])
-
-
 # -----------------------------
 # RUN APPLICATION
 # -----------------------------
